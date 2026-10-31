@@ -1,0 +1,37 @@
+EverAfter Studio v2 — USE THE SAME EXISTING GITHUB REPOSITORY / RENDER ACCOUNT
+Existing repository: https://github.com/Keekeeper/everafter-photo-booth
+Existing static website: https://everafter-photo-booth.onrender.com
+
+SAFE TWO-STAGE MIGRATION (preserves the current public link until v2 is tested)
+1. Download and extract EverAfter_v2_Existing_GitHub_Repo_Upload.zip.
+2. Visit https://github.com/Keekeeper/everafter-photo-booth and choose Add file -> Upload files.
+3. Upload the FILES AND FOLDERS INSIDE this ZIP to the TOP LEVEL of the same repository.
+   GitHub repository root must contain server.py, requirements.txt, static/, and the ORIGINAL index.html.
+   IMPORTANT: This upload has NO root index.html, so your current site stays accessible.
+   Do not upload ZIP itself, .env, .sqlite3, photos or API tokens.
+4. Wait for the existing static-site auto-deploy to finish. Its existing index.html should still load.
+5. In the SAME Render workspace, create a Web Service from the SAME GitHub repository.
+   Name: everafter-studio-engine
+   Runtime: Python
+   Branch: main
+   Build command: pip install -r requirements.txt
+   Start command: uvicorn server:app --host 0.0.0.0 --port $PORT
+   Region: Virginia
+6. Configure environment variables on new Web Service (NEVER in the repository):
+   APP_ENV=production
+   APP_BASE_URL=https://<actual new Render backend hostname>
+   APP_SECRET=<64+ random characters; generate with python secrets.token_hex(32)>
+   ENABLE_SIGNUP=true during first operator setup, then set false if only authorized partners can register
+   DATA_DIR=<Render persistent disk mount path, e.g. /var/data>
+   PARTNER_FRAME_ANCESTORS=https://everafter-photo-booth.onrender.com
+7. Secure storage: attach persistent disk on an eligible paid Render plan; verify database survives deploy.
+   Configure R2/S3 when ready and implement backup/restore and scheduled retention cleanup.
+8. Check /api/health on the new backend, sign up the first operator, create an event, upload couple poses, test guests, QR and private gallery, and test physical camera/printer.
+9. Only after the backend is verified, update the CURRENT ROOT index.html (a small forwarding/landing-page change) so the old URL links to the v2 booth. Keep the prior version available as rollback.
+10. To take real payments, emails, and unattended printing live, connect Stripe/Resend/PrintNode and verify with real hardware and test-mode payments. Do not sell it as fully certified before the release gates are met.
+
+IMPORTANT NOTES:
+- A Render static site cannot execute the Python server. It is necessary to add ONE Web Service in the SAME Render account; no new Render account is needed.
+- Keep the original public site live throughout staging.
+- GitHub uploads automatically trigger a build of the current static site; since the original index.html stays untouched, its guest interface should remain unchanged.
+- This backend is a pilot, not validated for multi-tenant, paid, high-volume wedding use.

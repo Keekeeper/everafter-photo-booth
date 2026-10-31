@@ -1,246 +1,44 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>EverAfter — Virtual Wedding Photo Booth</title>
-<style>
-  :root { --navy:#192735; --ink:#243240; --muted:#6f7b83; --cream:#fbf8f3; --border:#e6dfd6; --gold:#bb8d53; --gold-light:#e5c99d; --white:#fff; --shadow:0 24px 70px rgba(46,37,28,.10); }
-  * { box-sizing:border-box; }
-  body { margin:0; background:#f0eee9; color:var(--ink); font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
-  button,input { font:inherit; }
-  button { cursor:pointer; }
-  .app { max-width:1320px; margin:22px auto; background:var(--cream); min-height:90vh; border:1px solid #e9e2da; box-shadow:var(--shadow); border-radius:22px; overflow:hidden; }
-  .mast { display:flex; align-items:center; justify-content:space-between; padding:20px 32px; background:#fff; border-bottom:1px solid var(--border); gap:15px; flex-wrap:wrap; }
-  .brand { display:flex; align-items:center; gap:13px; }
-  .brand-mark { display:grid; place-items:center; width:42px; height:42px; color:#fff; border-radius:12px; font-family:Georgia,serif; font-size:23px; background:var(--navy); }
-  .brand-name { font-family:Georgia,serif; font-size:23px; letter-spacing:-.9px; color:var(--navy); }
-  .brand-sub { font-size:10px; text-transform:uppercase; letter-spacing:1.65px; color:var(--gold); font-weight:800; margin-top:3px; }
-  .right-mark { color:#879098; font-size:12px; display:flex; align-items:center; gap:7px; }
-  .spark { color:#ba935b; }
-  .hero { padding:27px 32px 23px; display:flex; justify-content:space-between; align-items:end; gap:18px; }
-  .eyebrow { color:#ab7d45; text-transform:uppercase; font-size:11px; font-weight:800; letter-spacing:2px; margin-bottom:8px; }
-  h1 { margin:0; color:var(--navy); font-family:Georgia,serif; font-weight:normal; letter-spacing:-1.2px; font-size:clamp(27px,3vw,40px); line-height:1.14; }
-  .hero p { margin:9px 0 0; line-height:1.5; color:var(--muted); font-size:14px; max-width:640px; }
-  .pill { background:#e8eee9; color:#54725c; font-weight:800; letter-spacing:.4px; font-size:11px; border-radius:100px; padding:9px 12px; white-space:nowrap; }
-  .workspace { display:grid; grid-template-columns:minmax(300px,.9fr) minmax(360px,1.16fr); gap:22px; padding:0 32px 26px; align-items:start; }
-  .panel { border:1px solid var(--border); background:#fff; border-radius:17px; padding:22px; box-shadow:0 6px 24px rgba(24,30,36,.025); }
-  .panel h2 { font-size:16px; margin:0; font-weight:750; letter-spacing:-.1px; color:var(--navy); }
-  .hint { color:var(--muted); line-height:1.45; font-size:12px; margin:7px 0 14px; }
-  .section-line { margin:20px 0; height:1px; background:var(--border); }
-  .eyeline { display:flex; gap:9px; align-items:center; margin-bottom:13px; }
-  .step { display:grid; place-items:center; background:#f5ebda; color:#916b3f; width:25px; height:25px; border-radius:50%; font-size:12px; font-weight:850; }
-  .pose-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; }
-  .pose { border:1px solid var(--border); background:var(--cream); border-radius:12px; padding:10px 6px; color:#6b736f; text-align:center; min-height:79px; transition:.2s ease; }
-  .pose svg { display:block; margin:2px auto 6px; }
-  .pose span { font-weight:750; font-size:12px; }
-  .pose.active { border-color:var(--gold); background:#fff6e8; color:#7f5427; box-shadow:0 0 0 2px rgba(187,141,83,.12) inset; }
-  .upload { display:flex; cursor:pointer; align-items:center; justify-content:center; gap:9px; padding:14px; border:1.5px dashed #cbbba6; background:#fcfaf7; border-radius:12px; color:#82613c; font-size:13px; font-weight:750; transition:background .2s; text-align:center; }
-  .upload:hover { background:#f7efdf; }
-  .upload input { display:none; }
-  .note { font-size:11px; line-height:1.5; color:#8a8580; margin-top:8px; }
-  .tip { background:#f5f5ef; color:#647065; border-radius:9px; padding:10px 12px; font-size:12px; line-height:1.45; margin-top:11px; }
-  .two-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .text-field { display:grid; gap:5px; min-width:0; }
-  .text-field span,.control-label { font-size:11px; color:#6d7780; font-weight:800; }
-  .text-field input { width:100%; min-width:0; border:1px solid var(--border); background:#fff; border-radius:8px; padding:10px; outline:none; color:var(--navy); font-size:13px; }
-  .text-field input:focus { border-color:var(--gold); }
-  .action { display:flex; flex-wrap:wrap; gap:8px; margin-top:11px; }
-  .btn { border:1px solid #d8d4ce; border-radius:9px; font-size:12px; padding:10px 12px; color:#4b555e; background:#fff; font-weight:750; }
-  .btn:hover { background:#f6f4f0; }
-  .btn[disabled] { opacity:.55; cursor:wait; }
-  .btn.primary { background:var(--navy); color:#fff; border-color:var(--navy); }
-  .btn.gold { background:#b68b54; color:#fff; border-color:#b68b54; }
-  .btn.full { width:100%; }
-  .slider-row { display:grid; grid-template-columns:78px 1fr 44px; align-items:center; gap:10px; padding:8px 0; }
-  .slider-row output { font-size:11px; font-variant-numeric:tabular-nums; text-align:right; color:#626b73; }
-  input[type=range] { width:100%; accent-color:#b68b54; cursor:pointer; }
-  .check { display:flex; gap:9px; align-items:center; font-size:12px; color:#66727c; }
-  .check input { accent-color:var(--gold); }
-  .status { font-size:11px; line-height:1.45; color:#617269; background:#f1f6f0; border:1px solid #dceadd; padding:10px; border-radius:9px; margin-top:10px; }
-  .status.warn { background:#fff8ee; border-color:#f3dfbd; color:#876132; }
-  .right .preview-head { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; margin-bottom:14px; }
-  .micro { font-size:11px; color:#93918e; }
-  .preview-shell { padding:19px; background:linear-gradient(135deg,#f2ede5,#efe5d9); border:1px solid #dfd5c9; border-radius:17px; }
-  .preview-wrap { width:min(100%,385px); margin:0 auto; position:relative; }
-  #portrait { display:block; width:100%; height:auto; aspect-ratio:2/3; background:#dac4aa; box-shadow:0 14px 36px rgba(48,34,20,.19); border:7px solid #fff; cursor:grab; touch-action:none; }
-  #portrait:active { cursor:grabbing; }
-  .preview-label { position:absolute; right:17px; top:16px; background:rgba(255,255,255,.93); border-radius:100px; font-size:10px; padding:6px 9px; color:#5f6d77; box-shadow:0 2px 6px #0002; pointer-events:none; }
-  .bottom { margin-top:15px; display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; }
-  .bottom-copy { font-size:11px; color:#7c8488; line-height:1.55; max-width:300px; }
-  .bottom-actions { display:flex; gap:9px; flex-wrap:wrap; }
-  .bottom-actions .btn { padding:12px 14px; }
-  .camera-box { margin-top:12px; padding:12px; background:#111b25; border-radius:12px; }
-  .camera-box video { display:block; width:100%; max-height:330px; border-radius:8px; object-fit:contain; background:#0a1118; transform:scaleX(-1); }
-  .camera-box .action { justify-content:center; }
-  .camera-box .btn { font-size:13px; }
-  .upload-inline { display:inline-flex; align-items:center; cursor:pointer; }
-  .consent { margin-top:14px; align-items:start; padding:12px; border:1px solid #e6dfd6; border-radius:9px; background:#fcfaf7; color:#4d5c65; line-height:1.45; }
-  .consent input { margin:2px 0 0; flex-shrink:0; }
-  .gallery-head { margin-top:19px; display:flex; align-items:center; justify-content:space-between; }
-  .gallery { display:flex; gap:8px; overflow-x:auto; padding:9px 0 3px; min-height:64px; }
-  .thumbnail { width:68px; height:91px; border:2px solid #fff; box-shadow:0 2px 7px rgba(25,39,53,.12); border-radius:5px; object-fit:cover; cursor:pointer; flex-shrink:0; }
-  .empty-gallery { font-size:12px; color:#a0a3a5; margin:11px 0; }
-  .footer { border-top:1px solid var(--border); background:#fff; padding:14px 32px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; color:#9a9794; font-size:11px; }
-  @media(max-width:850px) { .app { margin:0; border:0; border-radius:0; min-height:100vh; } .workspace { grid-template-columns:1fr; padding:0 17px 18px; } .hero { padding:22px 18px 19px; } .mast { padding:15px 18px; } .panel { padding:17px; } .preview-wrap { max-width:310px; } .right { order:0; } .right-mark { display:none; } .footer { padding:13px 18px; } }
-  @media print { body { background:white; } .mast,.hero,.left,.preview-head,.bottom,.gallery-head,.gallery,.footer {display:none !important;} .app,.panel,.preview-shell { margin:0; padding:0; border:0; box-shadow:none; background:white; } .workspace { display:block; padding:0; } .preview-wrap { width:4in; height:6in; max-width:none; } #portrait { width:4in; height:6in; border:0; box-shadow:none; } .preview-label {display:none;} @page { size:4in 6in; margin:0; } }
-</style>
-</head>
-<body>
-<div class="app" id="wbApp">
-  <header class="mast"><div class="brand"><div class="brand-mark">E</div><div><div class="brand-name">everafter<span style="color:#b88b53">.</span></div><div class="brand-sub">The virtual couple photo booth</div></div></div><div class="right-mark"><span class="spark">✦</span> PILOT EDITION · LOCAL PHOTO PROCESSING</div></header>
-  <section class="hero"><div><div class="eyebrow">A picture with the newlyweds — for everyone</div><h1>Everyone gets their moment.</h1><p>Capture the couple once. Let every guest create a personalized keepsake, even while the newlyweds are enjoying their day.</p></div><span class="pill">● PILOT READY</span></section>
-  <main class="workspace">
-    <section class="panel left" aria-label="Photo booth settings">
-      <div class="eyeline"><span class="step">1</span><h2>Couple's poses</h2></div>
-      <p class="hint">Choose a pose, then upload a photo of the bride and groom together. You can set up all three poses separately.</p>
-      <div class="pose-grid" role="group" aria-label="Wedding pose"><button type="button" class="pose active" data-pose="formal" aria-pressed="true"><svg width="28" height="24" viewBox="0 0 28 24" fill="none"><path d="M5 20V11a4 4 0 018 0v9m2 0V10a4 4 0 018 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="4" r="3" fill="currentColor"/><circle cx="19" cy="4" r="3" fill="currentColor"/></svg><span>Formal</span></button><button type="button" class="pose" data-pose="fun" aria-pressed="false"><svg width="28" height="24" viewBox="0 0 28 24" fill="none"><circle cx="8" cy="8" r="5" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="8" r="5" stroke="currentColor" stroke-width="2"/><path d="M6 8h4m8 0h4M6 19c5 4 11 4 16 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Goofy</span></button><button type="button" class="pose" data-pose="party" aria-pressed="false"><svg width="28" height="24" viewBox="0 0 28 24" fill="none"><path d="M7 21l6-18 9 18-15-4zm9-14 6-2M4 6l3 3m15 7 3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Party</span></button></div>
-      <label class="upload" style="margin-top:12px"><span aria-hidden="true">↑</span> <span id="coupleUploadText">Upload formal couple photo</span><input type="file" id="coupleFile" accept="image/*" /></label>
-      <div class="tip"><strong>Photo setup:</strong> Shoot the couple at the same camera height as guests. Leave a clear spot between them (or beside them) where each guest will appear.</div>
-      <div class="action"><button type="button" class="btn" id="saveSetup">↓ Save couple setup</button><label class="btn upload-inline">↑ Load saved setup<input id="loadSetup" type="file" accept="application/json,.json" hidden /></label></div><div class="note">The setup file includes the couple’s photos. Keep it private; use it to restore the booth on another device.</div>
-      <div class="section-line"></div>
-      <div class="eyeline"><span class="step">2</span><h2>Guest photograph</h2></div>
-      <p class="hint">Upload or take a guest photo. For the cleanest cutout, use a plain background and good, even lighting.</p>
-      <label class="upload"><span aria-hidden="true">◎</span><span id="guestUploadText">Choose guest photo</span><input type="file" id="guestFile" accept="image/*" /></label>
-      <div class="action"><button class="btn primary" id="startCamera" type="button">◎ Open camera</button><button class="btn" id="switchCamera" type="button" hidden>↻ Flip camera</button></div><div id="cameraBox" class="camera-box" hidden><video id="guestVideo" autoplay muted playsinline></video><div class="action"><button class="btn gold" id="takePhoto" type="button">Capture guest</button><button class="btn" id="closeCamera" type="button">Close camera</button></div></div><div class="action"><button class="btn primary" id="autoRemove" type="button" disabled>✦ Auto-remove guest background</button><button class="btn" id="plainRemove" type="button" disabled>Plain-wall cutout</button></div>
-      <div id="processStatus" class="status warn" role="status">Start by uploading the couple’s photo for one or more poses. Guests can then take a picture or upload one. Automatic cutout needs internet on first use; editing stays in this device.</div>
-      <div class="section-line"></div>
-      <div class="eyeline"><span class="step">3</span><h2>Make it yours</h2></div>
-      <div class="two-fields"><label class="text-field"><span>Couple's names</span><input id="coupleNames" maxlength="38" value="The Newlyweds" /></label><label class="text-field"><span>Wedding date</span><input id="weddingDate" maxlength="35" placeholder="October 31, 2026" value="Our Wedding Day" /></label></div>
-      <div style="margin-top:14px"><span class="control-label">Guest placement — drag photo to reposition</span><div class="slider-row"><span class="control-label">Size</span><input id="guestScale" type="range" min="40" max="145" value="83" /><output id="scaleOutput">83%</output></div><div class="slider-row"><span class="control-label">Brightness</span><input id="guestLight" type="range" min="70" max="130" value="100" /><output id="lightOutput">100%</output></div></div>
-      <label class="check"><input type="checkbox" id="photoFrame" checked /> Include the wedding keepsake border and names</label><label class="check consent"><input type="checkbox" id="guestConsent" /> I have the guest’s permission to create and save this composite photo</label>
-      <div class="action" style="margin-top:17px"><button type="button" class="btn" id="resetGuest">↺ Next guest / clear photo</button><button type="button" class="btn" id="recenter">⌖ Recenter guest</button></div>
-    </section>
-    <section class="panel right" aria-label="Composite photograph preview">
-      <div class="preview-head"><div><h2>Live photo preview</h2><div class="micro" style="margin-top:5px">1200 × 1800 pixels · 4 × 6 in at 300 ppi · drag the guest to reposition</div></div><span class="pill" style="background:#f6f0e7;color:#9a7448">PRIVATE BY DESIGN</span></div>
-      <div class="preview-shell"><div class="preview-wrap"><canvas id="portrait" width="1200" height="1800" aria-label="Wedding photograph preview"></canvas><div class="preview-label" id="previewLabel">ILLUSTRATIVE DEMO</div></div></div>
-      <div class="bottom"><div class="bottom-copy">The couple stays in their original photograph. Guest images are edited locally; the temporary session gallery clears on refresh.</div><div class="bottom-actions"><button type="button" class="btn" id="saveGallery">♡ Save to gallery</button><button type="button" class="btn gold" id="download">↓ Download photo</button><button type="button" class="btn primary" id="print">▣ Print</button></div></div>
-      <div class="gallery-head"><h2 style="font-size:13px">Session gallery</h2><button id="clearGallery" type="button" class="btn" style="padding:6px 10px;font-size:11px">Clear gallery</button></div><div id="gallery" class="gallery"><span class="empty-gallery">Your created photos will appear here.</span></div>
-    </section>
-  </main>
-  <footer class="footer"><span>EverAfter · Pilot release · on-device editing · no cloud gallery</span><span>For weddings, engagement parties & special occasions</span></footer>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#162d33"><title>EverAfter Studio — Every guest gets their moment.</title><link rel="stylesheet" href="/static/styles.css"></head><body>
+<div class="shell">
+  <aside class="sidebar" aria-label="Primary navigation">
+    <a class="logo" href="/" aria-label="EverAfter"><span class="logomark">e<span>✦</span></span><span><strong>everafter<span class="gold">.</span></strong><small>STUDIO FOR PARTNERS</small></span></a>
+    <div class="sidebar-label">WORKSPACE</div>
+    <nav class="nav">
+      <button class="navitem active" data-route="home"><span class="navico">◫</span> Overview</button>
+      <button class="navitem" data-route="booth"><span class="navico">◎</span> The photo booth</button>
+      <button class="navitem" data-route="studio"><span class="navico">▦</span> Event studio</button>
+      <button class="navitem" data-route="bookings"><span class="navico">▤</span> Bookings</button>
+      <button class="navitem" data-route="integrations"><span class="navico">⌘</span> Integrations</button>
+    </nav>
+    <div class="side-promo"><span class="mini-spark">✦</span><h3>A picture with everyone.</h3><p>A keepsake experience designed to make every guest feel part of the story.</p><button id="promoBooth" class="text-btn">Launch guest booth →</button></div>
+    <div class="side-bottom"><div class="avatar">EA</div><span><b id="operatorStatus">Demo workspace</b><small id="connectionStatus">Local preview</small></span><button id="signOut" title="Sign out" hidden>↗</button></div>
+  </aside>
+  <div class="content">
+    <header class="topbar"><button id="mobileMenu" class="mobile-menu">☰</button><span class="breadcrumb">EVERAFTER <span>/</span> <b id="breadcrumbCurrent">Overview</b></span><div class="top-right"><span class="live-dot"></span><span id="topBadge">PILOT PLATFORM</span><button id="topStudio" class="outline-button">Operator login <span>↗</span></button></div></header>
+    <main id="route-home" class="page route active">
+      <section class="hero"><div class="hero-copy"><div class="eyebrow">✦ A NEW KIND OF WEDDING MEMORY</div><h1>Every guest.<br><em>One beautiful moment.</em></h1><p>Capture the newlyweds once. Give everyone a photo that feels like they were truly there, without taking the couple away from their celebration.</p><div class="hero-actions"><button class="primary-button" data-route="booth">Enter the photo booth <span>↗</span></button><button class="secondary-button" data-route="studio">Set up a wedding <span>→</span></button></div><div class="hero-proof"><span>✦</span> Real cutout compositing <span>•</span> Print-ready 4×6 <span>•</span> Partner-friendly</div></div><div class="hero-art"><div class="hero-halo"></div><div class="sample-portrait"><div class="sample-arch"><span class="arch-star s1">✧</span><span class="arch-star s2">✧</span><div class="person leftperson"><i></i><b></b></div><div class="person centerperson"><i></i><b></b></div><div class="person rightperson"><i></i><b></b></div></div><div class="sample-portrait-caption"><small>A MOMENT WITH THE NEWLYWEDS</small><strong>Forever starts here.</strong></div></div><div class="floating-note"><span>✦</span><b>Beautifully together</b><small>Three memories. One photograph.</small></div></div></section>
+      <div class="statrow"><div><strong>01</strong><span>Couple captures their wedding poses</span></div><div><strong>02</strong><span>Guest takes a picture at the booth</span></div><div><strong>03</strong><span>Natural composite, download & print</span></div></div>
+      <section class="section-head"><div><div class="eyebrow">BUILT FOR THE EVENT INDUSTRY</div><h2>One platform. Every part of the experience.</h2></div><button data-route="integrations" class="subtle-link">For booth operators →</button></section>
+      <div class="feature-grid"><article class="feature-card"><div class="feature-icon">◎</div><h3>Natural composite photography</h3><p>AI person segmentation, clean edges, scale controls and scene matching. No more rectangular selfies.</p></article><article class="feature-card"><div class="feature-icon">▦</div><h3>Event-ready operator tools</h3><p>Multiple couples, three poses per event, branded keepsakes and controlled guest sessions.</p></article><article class="feature-card"><div class="feature-icon">▧</div><h3>Delivery that feels magical</h3><p>Private guest links, QR codes, optional email, and booth-side printing with supported printers.</p></article></div>
+    </main>
+    <main id="route-booth" class="page route"><div class="page-title"><div><div class="eyebrow">THE GUEST EXPERIENCE</div><h1>Make a little magic.</h1><p>Take your photo, choose your pose, and step into the couple's wedding memory.</p></div><div class="page-tools"><span id="eventChip" class="status-chip">Demo event</span><button class="outline-button" id="newGuest">↺ Next guest</button></div></div>
+      <div class="booth-grid"><section class="booth-controls"><div class="section-card"><div class="label-row"><span class="stepnum">01</span><h2>Pick your moment</h2></div><div class="pose-picker"><button class="pose-choice selected" data-pose="formal"><span>♡</span><strong>Classic</strong><small>Timeless & elegant</small></button><button class="pose-choice" data-pose="fun"><span>✦</span><strong>Playful</strong><small>A little personality</small></button><button class="pose-choice" data-pose="party"><span>♫</span><strong>Party</strong><small>Let's celebrate</small></button></div><p class="help">For a natural photo, use a couple portrait with open space where guests will stand.</p><label class="upload-button" style="margin-top:10px">↑ Try with a couple photograph<input id="localCouple" type="file" accept="image/*" hidden></label></div>
+        <div class="section-card"><div class="label-row"><span class="stepnum">02</span><h2>Step in, smile.</h2></div><p class="help">We recommend a half-body or full-length photograph against a simple background.</p><div class="capture-actions"><button class="primary-button wide" id="startCamera">◎ Open booth camera</button><label class="upload-button">↑ Upload guest photo<input type="file" id="guestFile" accept="image/*" hidden></label></div><div id="cameraStage" class="camera-stage" hidden><video autoplay muted playsinline id="cameraVideo"></video><div class="camera-guide"><div class="guide-head"></div><div class="guide-body"></div><span>Step into the outline</span></div><div class="camera-footer"><button id="flipCamera">↺ Flip</button><button id="capture">● Capture</button><button id="closeCamera">✕ Close</button></div></div><div class="capture-actions"><button id="cutoutAI" class="action-button" disabled>✦ Remove background with AI</button><button id="cutoutSimple" class="action-button" disabled>Plain backdrop cutout</button></div><p class="help" id="cutoutStatus">No guest captured yet. The finished photograph will not include an uncut rectangular selfie.</p></div>
+        <div class="section-card"><div class="label-row"><span class="stepnum">03</span><h2>Make it look real.</h2></div><div class="range"><label for="guestSize">Guest size <output id="sizeOut">100%</output></label><input id="guestSize" type="range" min="40" max="185" value="100"></div><div class="range"><label for="guestWarmth">Scene warmth <output id="warmthOut">0</output></label><input id="guestWarmth" type="range" min="-50" max="50" value="0"></div><div class="range"><label for="guestLight">Light match <output id="lightOut">100%</output></label><input id="guestLight" type="range" min="65" max="140" value="100"></div><div class="switchrow"><label><input type="checkbox" id="showFrame" checked> Wedding keepsake frame</label><button id="reposition">⌖ Center guest</button></div><div class="switchrow"><span class="help">Tap or drag your guest in the preview to place them.</span><button id="addGuest">+ Add guest</button></div><div class="formrow"><label>Couple names<input id="coupleName" type="text" placeholder="The Newlyweds" maxlength="70" value="The Newlyweds"></label><label>Celebration date<input id="dateLabel" type="text" placeholder="Our wedding day" maxlength="42" value="OUR WEDDING DAY"></label></div></div>
+        <div class="section-card"><div class="label-row"><span class="stepnum">04</span><h2>Share your memory.</h2></div><label class="consent"><input type="checkbox" id="guestConsent"><span>I agree to this edited wedding photograph being created and temporarily saved if I choose to share it.</span></label><div class="capture-actions"><button id="downloadPhoto" class="primary-button wide" disabled>↓ Download 4×6 photo</button><button id="saveToCloud" class="outline-button wide" disabled>▦ Save & get QR code</button><button id="printPhoto" class="outline-button wide" disabled>▣ Print photo</button></div><p class="help" id="boothStatus">Upload the couple's picture in Event Studio, then photograph a guest to start.</p></div>
+      </section><section class="preview-column"><div class="preview-top"><span>LIVE COMPOSITION</span><span class="preview-pill">4 × 6 PRINT READY</span></div><div class="preview-bg"><canvas id="portrait" width="1200" height="1800" aria-label="Photo booth composite preview"></canvas><div class="canvas-corner">✦ <span>EVERAFTER</span></div></div><div class="preview-bottom"><span>✦ The same photograph. A new memory every time.</span><small>Drag to reposition guest</small></div><div id="deliveryCard" class="delivery-card" hidden><div class="delivery-qr"><img id="qrImage" alt="Photo QR code" width="124" height="124"></div><div><h3>Your memory is ready!</h3><p>Scan to open the private gallery, or send it to your inbox.</p><a id="guestGalleryLink" target="_blank" rel="noopener">Open guest gallery ↗</a><div class="email-row"><input type="email" id="guestEmail" placeholder="Email address"><button id="emailPhoto">Send</button></div></div></div></section></div>
+    </main>
+    <main id="route-studio" class="page route"><div class="page-title"><div><div class="eyebrow">EVENT OPERATOR WORKSPACE</div><h1>Your event studio.</h1><p>One polished setup for every couple and event you manage.</p></div><span class="status-chip">PRIVATE OPERATOR AREA</span></div>
+      <div id="authPanel" class="auth-layout"><div class="auth-copy"><div class="tiny-mark">✦</div><h2>Make every wedding your best event.</h2><p>Create branded booth experiences, manage multiple events and give every guest an unforgettable takeaway.</p><ul><li>Manage separate events and pose libraries</li><li>Secure operator-only photo galleries</li><li>Partner integrations with print and delivery</li></ul></div><form id="authForm" class="auth-card"><div class="eyebrow">WELCOME TO EVERAFTER STUDIO</div><h2 id="authHeading">Operator sign in</h2><label id="companyField" hidden>Company name<input id="authCompany" autocomplete="organization" placeholder="Your photo booth company"></label><label>Email<input id="authEmail" type="email" autocomplete="email" placeholder="you@yourcompany.com" required></label><label>Password<input id="authPassword" type="password" autocomplete="current-password" placeholder="At least 10 characters" required></label><button type="submit" id="authSubmit" class="primary-button wide">Sign in to studio →</button><button type="button" class="subtle-link" id="toggleRegister">New operator? Create an account</button><p class="help" id="authFeedback"></p></form></div>
+      <div id="operatorPanel" hidden><div class="operator-stats"><div><small>EVENTS</small><strong id="countEvents">0</strong><span>Managed weddings</span></div><div><small>GUEST PHOTOS</small><strong id="countPhotos">0</strong><span>Saved memories</span></div><div><small>PLATFORM</small><strong id="storageStatus">LOCAL</strong><span>Media storage</span></div></div><div class="studio-columns"><section class="section-card"><div class="flex-head"><h2>Create an event</h2><span class="microtext">Private operator access</span></div><form id="newEventForm" class="stack"><label>Event title<input id="eventTitle" placeholder="The Morrison Wedding" required maxlength="150"></label><label>Couple names<input id="newNames" placeholder="Olivia & James" required maxlength="140"></label><div class="formrow"><label>Wedding date<input id="newDate" type="date"></label><label>Venue<input id="newVenue" placeholder="The Grand Ballroom" maxlength="160"></label></div><button type="submit" class="primary-button">+ Create wedding event</button></form></section><section class="section-card"><div class="flex-head"><h2>Manage your events</h2><button id="reloadEvents" class="subtle-link">↺ Refresh</button></div><div id="eventList" class="event-list"><p class="help">Create an event to get started.</p></div></section></div><section class="section-card event-editor" id="eventEditor" hidden><div class="flex-head"><div><div class="eyebrow">COUPLE PORTRAIT LIBRARY</div><h2 id="editorTitle">Selected event</h2></div><button id="launchEvent" class="primary-button">Open this booth ↗</button></div><p class="help">Load real wedding photographs, one per pose. For natural results, leave room for the guest; avoid crowded backgrounds and overlapping arms.</p><div class="pose-uploads"><label><span>01 / CLASSIC</span><strong>Formal pose</strong><input type="file" data-pose-upload="formal" accept="image/*"><small>Choose a photograph</small></label><label><span>02 / PLAYFUL</span><strong>Goofy pose</strong><input type="file" data-pose-upload="fun" accept="image/*"><small>Choose a photograph</small></label><label><span>03 / PARTY</span><strong>Party pose</strong><input type="file" data-pose-upload="party" accept="image/*"><small>Choose a photograph</small></label></div><div id="uploadedPoseStatus" class="microtext">No pose images uploaded yet.</div><div class="link-panel"><div><small>GUEST BOOTH LINK</small><code id="boothLinkText"></code></div><button id="copyBooth">Copy link</button></div><div class="link-panel"><div><small>BOOKING PAGE LINK</small><code id="bookingLinkText"></code></div><button id="copyBooking">Copy link</button></div><div class="gallery-operator"><div class="flex-head"><h3>Private event gallery</h3><button id="refreshPhotos" class="subtle-link">Refresh photos</button></div><div id="operatorPhotos" class="operator-photo-grid"></div></div></section></div>
+    </main>
+    <main id="route-bookings" class="page route"><div class="page-title"><div><div class="eyebrow">EVERAFTER FOR CELEBRATIONS</div><h1>Let's make it unforgettable.</h1><p>Send an inquiry to a participating photo booth operator. Payment links are issued only after they approve the request.</p></div><span class="status-chip">REQUEST A DATE</span></div><div class="studio-columns"><section class="section-card booking-card"><h2>Request a photo booth experience</h2><form id="bookingForm" class="stack"><label>Operator ID <span class="required">*</span><input id="bookingOperator" required placeholder="Provided by your EverAfter partner"></label><label>Your name<input id="bookingName" required maxlength="120" placeholder="Your name"></label><label>Email<input id="bookingEmail" type="email" required placeholder="you@example.com"></label><div class="formrow"><label>Event date<input id="bookingDate" type="date" required></label><label>Venue<input id="bookingVenue" placeholder="City or venue" maxlength="160"></label></div><label>Tell us about the celebration<textarea id="bookingNotes" rows="4" maxlength="1500" placeholder="Guest count, venue, preferred experience, anything special..."></textarea></label><button class="primary-button" type="submit">Send my inquiry →</button><p class="help" id="bookingFeedback">No payment is taken when sending an inquiry.</p></form></section><section class="section-card"><div class="eyebrow">FOR YOUR PHOTO BOOTH BUSINESS</div><h2>Manage incoming inquiries</h2><p class="help">Operators can issue a secure Stripe-hosted deposit checkout link after reviewing an inquiry.</p><div id="bookingOperatorPanel" hidden><button id="reloadBookings" class="outline-button">Refresh inquiries</button><div id="bookingList" class="bookings-list"></div></div><p id="bookingSignInNotice" class="help">Sign in to Event Studio to review leads and issue deposit checkout links.</p><div class="divider"></div><div class="booking-points"><div><span>01</span><b>Guest requests a date</b><small>No charge until you approve.</small></div><div><span>02</span><b>You review & set the price</b><small>Choose a deposit amount.</small></div><div><span>03</span><b>Secure payment link</b><small>Checkout uses Stripe when configured.</small></div></div></section></div></main>
+    <main id="route-integrations" class="page route"><div class="page-title"><div><div class="eyebrow">POWERED BY EVERAFTER · WHITE-LABEL READY</div><h1>Built for your booth business.</h1><p>Add a new premium experience without buying a whole new photo booth.</p></div><span class="status-chip">PARTNER INTEGRATION</span></div><div class="integration-top"><div class="integration-hero"><div class="eyebrow">YOUR BRAND. OUR TECHNOLOGY.</div><h2>Everything works together.</h2><p>Put EverAfter on your touch-screen kiosk, pair it with your existing camera and printer, and manage the full workflow from one operator account.</p><button class="primary-button" data-route="studio">Set up your first event →</button></div><div class="integration-terminal"><div><i></i><i></i><i></i><span>PARTNER EMBED</span></div><pre id="embedCode">&lt;iframe src="https://your-site/?booth=EVENT_CODE"
+  allow="camera" style="width:100%;height:900px;border:0"&gt;
+&lt;/iframe&gt;</pre><button id="copyEmbed">Copy integration snippet ↗</button></div></div><div class="section-head"><div><div class="eyebrow">INTEGRATION MODULES</div><h2>Connect it to your existing equipment.</h2></div></div><div class="integration-grid"><article><div>◎</div><h3>Capture & compositing</h3><p>Webcam, DSLR capture-card inputs presented as cameras, image upload and AI segmentation, with natural placement controls.</p><small>Camera via browser permissions</small></article><article><div>▦</div><h3>Cloud gallery & QR</h3><p>Server-generated private photo links, event galleries and QR delivery. Optional S3-compatible media storage.</p><small>Storage credentials required for cloud</small></article><article><div>▣</div><h3>Professional printing</h3><p>Browser print with a 4×6 layout or remote PrintNode job submission to an operator-selected printer.</p><small>PrintNode account + driver required</small></article><article><div>✉</div><h3>Guest email delivery</h3><p>Deliver a private gallery link using Resend from your verified sending domain.</p><small>Verified email domain required</small></article><article><div>◇</div><h3>Bookings & deposits</h3><p>Inbound booking form, operator review and secure Stripe-hosted deposit checkout.</p><small>Stripe business account required</small></article><article><div>♙</div><h3>Operator accounts</h3><p>Separate vendor accounts, event access, time-limited sessions and per-event photograph deletion.</p><small>Production hardening before paid rollout</small></article></div><section class="section-card" id="printerPanel" hidden style="margin-top:22px"><div class="flex-head"><h2>Connect a booth printer</h2><button id="fetchPrinters" class="outline-button">Discover PrintNode printers</button></div><p class="help">Run the PrintNode Client on the booth computer with the actual 4×6 printer configured. Choose the printer here to enable queued printing after a guest saves a photo.</p><div class="formrow"><label>Available printers<select id="printerSelect" style="width:100%;padding:10px;border:1px solid #e1e8e0;border-radius:7px"><option value="">Discover printers first</option></select></label><button id="savePrinter" class="primary-button" style="align-self:end">Save printer</button></div><p id="printerStatus" class="help">Printer integration requires a PrintNode API key configured on the server.</p></section><section class="section-card" id="partnerKeyPanel" hidden style="margin-top:22px"><div class="flex-head"><h2>Partner API access</h2><button id="createPartnerKey" class="outline-button">+ Generate partner key</button></div><p class="help">Use a server-side API key to create events from an existing photo booth software platform. Never place this key into public JavaScript or an iframe.</p><div id="partnerKeyOutput" class="link-panel" hidden><code id="partnerKeyValue"></code><button id="copyPartnerKey">Copy once</button></div><div id="partnerKeyList" class="event-list" style="margin-top:10px"></div></section><div class="tip-banner">✦ <span>Production note: Camera/AI segmentation quality, cloud persistence, payment webhooks and the exact printer model must be certified on physical hardware before selling event guarantees.</span></div></main>
+    <footer class="site-footer"><span>✦ everafter.studio — a beautiful moment for everyone.</span><span>Partner pilot v2.0 <span class="dot-sep">·</span> <button id="footerStatus">Connection status</button></span></footer>
+  </div>
 </div>
-<script>
-(() => {
-'use strict';
-const root = document.getElementById('wbApp');
-const by = id => root.querySelector('#' + id);
-const cvs = by('portrait'), ctx = cvs.getContext('2d');
-const W = cvs.width, H = cvs.height;
-const poses = {formal:'formal',fun:'goofy',party:'party'};
-const state = {pose:'formal',couple:{formal:null,fun:null,party:null},guest:null,cutout:null,
-  x:.5,y:.78,scale:.83,brightness:1,frame:true,gallery:[],drag:null,cameraStream:null,cameraFacing:'user',cameraPending:false};
-const colors = {navy:'#192735',gold:'#bd925a',ivory:'#fffaf1'};
-const setStatus=(msg,warn=false)=>{const e=by('processStatus');e.textContent=msg;e.classList.toggle('warn',warn);};
-const isReady=()=>Boolean(state.couple[state.pose] && state.guest && by('guestConsent').checked);
-function updateExportButtons(){for(const id of ['download','print','saveGallery'])by(id).disabled=!isReady();}
-function loadImage(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=()=>reject(new Error('Unsupported or unreadable image'));im.src=src;});}
-async function openImg(f){
- if(!f || (!f.type.startsWith('image/') && !/\.(heic|heif)$/i.test(f.name)))throw Error('Please choose a valid image file');
- if(f.size>25000000)throw Error('Photo is over 25 MB. Choose a smaller image');
- const url=URL.createObjectURL(f);
- try{return await loadImage(url)}finally{URL.revokeObjectURL(url)}
-}
-function cover(im,x,y,w,h){const scale=Math.max(w/im.width,h/im.height),sw=w/scale,sh=h/scale;ctx.drawImage(im,(im.width-sw)/2,(im.height-sh)/2,sw,sh,x,y,w,h);}
-function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
-function silhouette(px,py,sc,kind){ctx.save();ctx.translate(px,py);ctx.scale(sc,sc);ctx.shadowColor='rgba(63,43,31,.18)';ctx.shadowBlur=16;ctx.shadowOffsetY=9;
- const hair=kind==='bride'?'#4d332a':kind==='groom'?'#332e30':'#654f45', coat=kind==='bride'?'#e5d8c7':kind==='groom'?'#273849':'#b98179';
- ctx.fillStyle=coat;ctx.beginPath();if(kind==='bride'){ctx.moveTo(-46,145);ctx.lineTo(-85,570);ctx.lineTo(87,570);ctx.lineTo(48,145);ctx.quadraticCurveTo(0,118,-46,145)}else roundedRect(-57,136,114,413,25);ctx.fill();
- ctx.fillStyle='#b9896e';roundedRect(-15,96,30,62,13);ctx.fill();ctx.beginPath();ctx.ellipse(0,63,55,70,0,0,Math.PI*2);ctx.fill();
- ctx.fillStyle=hair;ctx.beginPath();ctx.ellipse(0,21,57,33,0,0,Math.PI*2);ctx.fill();
- if(kind==='groom'){ctx.fillStyle='#fffaf4';ctx.beginPath();ctx.moveTo(-18,145);ctx.lineTo(0,234);ctx.lineTo(21,145);ctx.fill();ctx.fillStyle='#805b43';ctx.beginPath();ctx.moveTo(0,146);ctx.lineTo(-10,165);ctx.lineTo(0,200);ctx.lineTo(10,165);ctx.closePath();ctx.fill();}
- if(kind==='bride'){ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,79,53,.15,Math.PI-.15);ctx.stroke();}ctx.restore();}
-function sampleBackground(){let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#a98a76');g.addColorStop(.64,'#d6be9c');g.addColorStop(1,'#b9a088');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
- let gg=ctx.createRadialGradient(600,620,60,600,630,850);gg.addColorStop(0,'rgba(255,245,220,.80)');gg.addColorStop(1,'rgba(72,48,32,0)');ctx.fillStyle=gg;ctx.fillRect(0,0,W,H);
- ctx.save();ctx.lineWidth=42;ctx.strokeStyle='#f4e9d4';ctx.beginPath();ctx.moveTo(184,1490);ctx.lineTo(184,425);ctx.bezierCurveTo(184,-30,1016,-30,1016,425);ctx.lineTo(1016,1490);ctx.stroke();ctx.lineWidth=8;ctx.strokeStyle='#ceb78f';ctx.stroke();ctx.restore();
- for(let j=0;j<24;j++){ctx.fillStyle=j%2?'#52745e':'#678568';ctx.beginPath();ctx.ellipse(130+j*43,1290+(j%5)*28,34,70,Math.sin(j)*.5,0,2*Math.PI);ctx.fill();}
- silhouette(283,713,1.52,'bride');silhouette(918,694,1.58,'groom');ctx.fillStyle='rgba(50,39,30,.71)';ctx.font='bold 25px Arial';ctx.textAlign='center';ctx.fillText('UPLOAD THE COUPLE’S WEDDING PORTRAIT',W/2,165);}
-function portrait(){ctx.clearRect(0,0,W,H);const photoH=state.frame?1588:1800;ctx.save();ctx.beginPath();ctx.rect(0,0,W,photoH);ctx.clip();
- const c=state.couple[state.pose];if(c)cover(c,0,0,W,photoH);else sampleBackground();
- const guest=state.cutout||state.guest;if(guest){const hh=940*state.scale,ww=hh*(guest.width/guest.height);ctx.save();ctx.filter=`brightness(${state.brightness})`;ctx.shadowColor='rgba(15,24,29,.22)';ctx.shadowBlur=16;ctx.shadowOffsetY=10;ctx.drawImage(guest,state.x*W-ww/2,state.y*photoH-hh,ww,hh);ctx.restore();}
- else if(!c){silhouette(W*.51,700,1.45,'guest');ctx.fillStyle='rgba(255,255,255,.94)';roundedRect(342,1250,518,67,16);ctx.fill();ctx.fillStyle='#594738';ctx.textAlign='center';ctx.font='bold 26px Arial';ctx.fillText('YOUR GUEST APPEARS HERE',W/2,1292);}
- if(!c){ctx.fillStyle='rgba(31,40,46,.10)';ctx.fillRect(0,0,W,photoH);}ctx.restore();
- if(state.frame){ctx.fillStyle=colors.ivory;ctx.fillRect(0,1588,1200,212);ctx.fillStyle='#d9c3a0';ctx.fillRect(110,1621,980,2);ctx.textAlign='center';ctx.fillStyle=colors.navy;ctx.font='normal 58px Georgia, serif';ctx.fillText(by('coupleNames').value.trim()||'The Newlyweds',600,1700,1050);ctx.font='normal 28px Arial';ctx.fillStyle='#937147';ctx.fillText((by('weddingDate').value.trim()||'Our Wedding Day').toUpperCase(),600,1757,1000);}}
-function sync(){by('scaleOutput').textContent=Math.round(state.scale*100)+'%';by('lightOutput').textContent=Math.round(state.brightness*100)+'%';
- by('previewLabel').textContent=state.couple[state.pose]?'REAL COUPLE PHOTO':'ILLUSTRATIVE DEMO';
- by('coupleUploadText').textContent=state.couple[state.pose]?'Replace '+poses[state.pose]+' couple photo':'Upload '+poses[state.pose]+' couple photo';
- by('guestUploadText').textContent=state.guest?'Replace guest photo':'Choose guest photo';updateExportButtons();portrait();}
-function setGuest(im){state.guest=im;state.cutout=null;state.x=.5;state.y=.78;by('guestConsent').checked=false;by('autoRemove').disabled=by('plainRemove').disabled=false;
- setStatus('Guest photo ready. Remove the background, position the guest and confirm permission before saving.');sync();}
-for(const b of root.querySelectorAll('.pose'))b.addEventListener('click',()=>{state.pose=b.dataset.pose;for(const el of root.querySelectorAll('.pose')){const active=el===b;el.classList.toggle('active',active);el.setAttribute('aria-pressed',String(active));}sync();});
-by('coupleFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{state.couple[state.pose]=await openImg(f);setStatus('Couple photograph saved for the '+poses[state.pose]+' pose in this browser session.');sync();}catch(err){setStatus(err.message,true);}finally{e.target.value='';}});
-by('guestFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{setGuest(await openImg(f));}catch(err){setStatus(err.message,true);}finally{e.target.value='';}});
-by('guestScale').addEventListener('input',e=>{state.scale=Number(e.target.value)/100;sync();});
-by('guestLight').addEventListener('input',e=>{state.brightness=Number(e.target.value)/100;sync();});
-for(const id of ['coupleNames','weddingDate'])by(id).addEventListener('input',sync);
-by('photoFrame').addEventListener('change',e=>{state.frame=e.target.checked;sync();});
-by('guestConsent').addEventListener('change',updateExportButtons);
-by('resetGuest').addEventListener('click',()=>{stopCamera();state.guest=state.cutout=null;state.x=.5;state.y=.78;by('guestConsent').checked=false;
- by('autoRemove').disabled=by('plainRemove').disabled=true;setStatus('Ready for the next guest. Couple poses remain available in this session.');sync();});
-by('recenter').addEventListener('click',()=>{state.x=.5;state.y=.78;sync();});
-function stopCamera(){if(state.cameraStream){state.cameraStream.getTracks().forEach(t=>t.stop());state.cameraStream=null;}const video=by('guestVideo');video.srcObject=null;by('cameraBox').hidden=true;by('switchCamera').hidden=true;}
-async function startCamera(){if(state.cameraPending)return;state.cameraPending=true;by('startCamera').disabled=true;stopCamera();
- try{if(!navigator.mediaDevices?.getUserMedia)throw Error('This browser does not allow camera access here. Open the site on HTTPS or upload a photo.');
-  const stream=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:state.cameraFacing},width:{ideal:1280},height:{ideal:1920}}});
-  state.cameraStream=stream;const v=by('guestVideo');v.srcObject=stream;v.style.transform=state.cameraFacing==='user'?'scaleX(-1)':'none';by('cameraBox').hidden=false;by('switchCamera').hidden=false;await v.play();setStatus('Camera ready. Stand in good lighting and tap Capture guest.');
- }catch(err){stopCamera();setStatus('Camera unavailable: '+err.message+' You can upload an existing photo instead.',true);}finally{state.cameraPending=false;by('startCamera').disabled=false;}}
-by('startCamera').addEventListener('click',startCamera);
-by('closeCamera').addEventListener('click',()=>{stopCamera();setStatus('Camera closed.');});
-by('switchCamera').addEventListener('click',()=>{state.cameraFacing=state.cameraFacing==='user'?'environment':'user';startCamera();});
-by('takePhoto').addEventListener('click',async()=>{const v=by('guestVideo');if(!v.videoWidth){setStatus('Camera is still initializing. Try again.',true);return;}
- const off=document.createElement('canvas');off.width=v.videoWidth;off.height=v.videoHeight;const g=off.getContext('2d');if(state.cameraFacing==='user'){g.translate(off.width,0);g.scale(-1,1);}g.drawImage(v,0,0);stopCamera();try{setGuest(await loadImage(off.toDataURL('image/jpeg',.92)));}catch(e){setStatus('Could not capture this frame. Try uploading a photo.',true);}});
-window.addEventListener('pagehide',stopCamera);
-let loaded=null;
-function loadSegmentation(){if(loaded)return loaded;loaded=new Promise((resolve,reject)=>{if(typeof window.SelfieSegmentation==='function')return resolve();
- const scr=document.createElement('script');scr.src='https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js';scr.crossOrigin='anonymous';scr.onload=resolve;scr.onerror=()=>reject(Error('AI library could not load. Check internet access.'));document.head.append(scr);});return loaded;}
-by('autoRemove').addEventListener('click',async()=>{if(!state.guest)return;const b=by('autoRemove');b.disabled=true;setStatus('Removing guest background on this device. First use may need to download the AI model.');let model=null;
- try{await loadSegmentation();model=new window.SelfieSegmentation({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/'+f});model.setOptions({modelSelection:1});
- const im=state.guest,k=Math.min(1,1024/Math.max(im.width,im.height)),w=Math.max(1,Math.round(im.width*k)),h=Math.max(1,Math.round(im.height*k));
- const off=document.createElement('canvas');off.width=w;off.height=h;off.getContext('2d').drawImage(im,0,0,w,h);
- const promise=new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('AI model timed out')),35000);
- model.onResults(r=>{clearTimeout(timer);try{const c=document.createElement('canvas');c.width=w;c.height=h;const o=c.getContext('2d');o.drawImage(r.segmentationMask,0,0,w,h);o.globalCompositeOperation='source-in';o.drawImage(off,0,0);o.globalCompositeOperation='source-over';resolve(c.toDataURL('image/png'));}catch(e){reject(e)}});
- model.send({image:off}).catch(err=>{clearTimeout(timer);reject(err);});});
- state.cutout=await loadImage(await promise);setStatus('AI cutout complete. Drag the guest to the right spot, confirm permission and save.');sync();
- }catch(err){loaded=null;setStatus('Automatic cutout unavailable: '+err.message+' Try the plain-wall cutout or upload a transparent PNG.',true);}finally{if(model?.close)model.close();b.disabled=false;}});
-by('plainRemove').addEventListener('click',async()=>{if(!state.guest)return;by('plainRemove').disabled=true;
- try{const im=state.guest,k=Math.min(1,950/Math.max(im.width,im.height)),w=Math.max(1,Math.round(im.width*k)),h=Math.max(1,Math.round(im.height*k));
- const c=document.createElement('canvas');c.width=w;c.height=h;const o=c.getContext('2d',{willReadFrequently:true});o.drawImage(im,0,0,w,h);const d=o.getImageData(0,0,w,h),p=d.data;
- const corners=[[3,3],[w-4,3],[3,h-4],[w-4,h-4]],colors=corners.map(([x,y])=>{const i=(Math.max(0,Math.min(h-1,y))*w+Math.max(0,Math.min(w-1,x)))*4;return[p[i],p[i+1],p[i+2]];});
- const n=w*h,seen=new Uint8Array(n),queue=new Int32Array(n);let head=0,tail=0;
- function similar(i){const z=i*4,r=p[z],g=p[z+1],b=p[z+2];return colors.some(([sr,sg,sb])=>(r-sr)**2+(g-sg)**2+(b-sb)**2<54*54);}
- function seed(i){if(!seen[i]&&similar(i)){seen[i]=1;queue[tail++]=i;}}
- for(let x=0;x<w;x++){seed(x);seed((h-1)*w+x);}for(let y=0;y<h;y++){seed(y*w);seed(y*w+w-1);}
- while(head<tail){const i=queue[head++],x=i%w,y=(i/w)|0;if(x)seed(i-1);if(x<w-1)seed(i+1);if(y)seed(i-w);if(y<h-1)seed(i+w);}
- for(let i=0;i<n;i++)if(seen[i])p[i*4+3]=0;o.putImageData(d,0,0);state.cutout=await loadImage(c.toDataURL('image/png'));sync();setStatus('Plain background removed. Fine hair may need AI cutout for better results.');
- }catch(err){setStatus('Background removal failed: '+err.message,true);}finally{by('plainRemove').disabled=false;}});
-function coords(e){const r=cvs.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};}
-cvs.addEventListener('pointerdown',e=>{if(!state.guest)return;const p=coords(e);state.drag={x:p.x,y:p.y,oldX:state.x,oldY:state.y};cvs.setPointerCapture?.(e.pointerId);e.preventDefault();});
-cvs.addEventListener('pointermove',e=>{if(!state.drag)return;const p=coords(e);state.x=Math.max(.02,Math.min(.98,state.drag.oldX+p.x-state.drag.x));state.y=Math.max(.2,Math.min(1.2,state.drag.oldY+(p.y-state.drag.y)*(state.frame?1.13:1)));portrait();});
-for(const event of ['pointerup','pointercancel','lostpointercapture'])cvs.addEventListener(event,()=>state.drag=null);
-function filename(){return 'EverAfter_'+(by('coupleNames').value||'Wedding').trim().replace(/[^a-z0-9_-]+/gi,'_').slice(0,32)+'_'+Date.now()+'.png';}
-function requireReady(){if(!isReady()){setStatus('Before saving: upload the couple and guest photographs and confirm guest permission.',true);return false;}return true;}
-function saveBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
-function canvasBlob(c,mime='image/png',quality=1){return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(b):reject(Error('Image export failed')),mime,quality));}
-by('download').addEventListener('click',async()=>{if(!requireReady())return;try{portrait();saveBlob(await canvasBlob(cvs),filename());setStatus('Downloaded a 1200 × 1800-pixel wedding photograph.');}catch(err){setStatus(err.message,true);}});
-by('print').addEventListener('click',()=>{if(requireReady())window.print();});
-function galleryRender(){const g=by('gallery');g.replaceChildren();if(!state.gallery.length){const x=document.createElement('span');x.className='empty-gallery';x.textContent='Your created photos will appear here.';g.append(x);return;}
- for(const entry of state.gallery){const im=document.createElement('img');im.src=entry.thumb;im.className='thumbnail';im.title='Tap to download';im.alt='Saved wedding portrait';im.addEventListener('click',()=>saveBlob(entry.blob,entry.name));g.append(im);}}
-by('saveGallery').addEventListener('click',async()=>{if(!requireReady())return;try{portrait();const blob=await canvasBlob(cvs),c=document.createElement('canvas');c.width=240;c.height=360;c.getContext('2d').drawImage(cvs,0,0,c.width,c.height);state.gallery.unshift({blob,name:filename(),thumb:c.toDataURL('image/jpeg',.65)});state.gallery=state.gallery.slice(0,12);galleryRender();setStatus('Saved locally to the temporary session gallery. Download it before closing this page.');}catch(err){setStatus(err.message,true);}});
-by('clearGallery').addEventListener('click',()=>{state.gallery=[];galleryRender();setStatus('Session gallery cleared.');});
-function scaledData(im){const max=1800,k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext('2d').drawImage(im,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.88);}
-by('saveSetup').addEventListener('click',()=>{try{if(!Object.values(state.couple).some(Boolean)){setStatus('Upload at least one couple pose before saving the setup.',true);return;}
- const setup={app:'EverAfter',version:1,names:by('coupleNames').value,date:by('weddingDate').value,frame:state.frame,poses:Object.fromEntries(Object.entries(state.couple).map(([k,im])=>[k,im?scaledData(im):null]))};
- const blob=new Blob([JSON.stringify(setup)],{type:'application/json'});saveBlob(blob,'EverAfter_Couple_Setup.json');setStatus('Couple setup downloaded. Keep this file private: it contains the original couple photos.');}catch(err){setStatus('Could not save setup: '+err.message,true);}});
-by('loadSetup').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{if(f.size>18000000)throw Error('Setup file is too large (18 MB max).');
- const d=JSON.parse(await f.text());if(d.app!=='EverAfter'||d.version!==1||!d.poses||typeof d.poses!=='object')throw Error('This is not a valid EverAfter setup file.');
- const parsed={formal:null,fun:null,party:null};for(const pose of Object.keys(parsed)){const value=d.poses[pose];if(value!==null&&value!==undefined){if(typeof value!=='string'||!value.startsWith('data:image/jpeg;base64,'))throw Error('Setup contains an unsupported photo.');parsed[pose]=await loadImage(value);}}
- if(!Object.values(parsed).some(Boolean))throw Error('No couple photos found in setup.');
- state.couple=parsed;by('coupleNames').value=String(d.names||'The Newlyweds').slice(0,38);by('weddingDate').value=String(d.date||'Our Wedding Day').slice(0,35);
- state.frame=d.frame!==false;by('photoFrame').checked=state.frame;state.pose=Object.keys(parsed).find(k=>parsed[k]);for(const btn of root.querySelectorAll('.pose')){const active=btn.dataset.pose===state.pose;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));}
- state.guest=state.cutout=null;by('guestConsent').checked=false;by('autoRemove').disabled=by('plainRemove').disabled=true;sync();setStatus('Couple setup restored. Ready for guest photos.');
- }catch(err){setStatus('Could not load couple setup: '+err.message,true);}finally{e.target.value='';}});
-sync();
-})();
-</script>
-</body>
-</html>
+<div id="toast" class="toast" aria-live="polite" hidden></div>
+<script src="/static/app.js" defer></script>
+</body></html>
